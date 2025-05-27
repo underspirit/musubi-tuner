@@ -2,6 +2,8 @@ import argparse
 import gc
 import math
 import time
+import os
+import sys
 from typing import Optional
 from PIL import Image
 
@@ -27,8 +29,38 @@ from hv_train_network import NetworkTrainer, load_prompts, clean_memory_on_devic
 
 import logging
 
+def init_logging(log_dir: str, log_filename: str = "app.log"):
+    # 创建日志目录如果不存在
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    
+    log_path = os.path.join(log_dir, log_filename)
+    
+    # 创建一个日志记录器
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)  # 设置日志级别为INFO
+
+    # 创建文件处理器，将日志输出到文件
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setLevel(logging.INFO)
+    
+    # 创建标准输出处理器
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setLevel(logging.INFO)  # 可以设置标准输出的日志级别
+
+    # 创建日志格式器
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    
+    # 为处理器设置格式
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+    
+    # 添加处理器到日志记录器
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+
+init_logging("logs")
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 from utils import model_utils
 from utils.safetensors_utils import load_safetensors, MemoryEfficientSafeOpen

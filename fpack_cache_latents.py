@@ -402,6 +402,8 @@ def encode_datasets_framepack(datasets: list[BaseDataset], encode: callable, arg
                     all_latent_cache_paths.append(item.latent_cache_path)
                     all_existing = os.path.exists(item.latent_cache_path)
                 else:
+                    print(f"item: {item}")
+                    print(f"{args.latent_window_size}")
                     latent_f = (item.frame_count - 1) // 4 + 1
                     num_sections = max(1, math.floor((latent_f - 1) / args.latent_window_size))  # min 1 section
                     all_existing = True
@@ -451,4 +453,13 @@ if __name__ == "__main__":
     #     args.batch_size = 1
     #     logger.info("Batch size is set to 1 for FramePack.")
 
+    DEBUG = False
+    if DEBUG:
+        import debugpy
+        
+        # 监听 Pod 的内网调试端口（最好不要用 localhost，否则宿主机访问不到）
+        debugpy.listen(("0.0.0.0", 50007))
+        print("Waiting for debugger attach...")
+        debugpy.wait_for_client()  # 可选：挂起直到连接
+        print("Debugger is attached")
     main(args)

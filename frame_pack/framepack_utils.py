@@ -122,7 +122,7 @@ def load_text_encoder1(
 ) -> tuple[LlamaTokenizerFast, LlamaModel]:
     # single file, split file and directory (contains 'text_encoder') support
     logger.info(f"Loading text encoder 1 tokenizer")
-    tokenizer1 = LlamaTokenizerFast.from_pretrained("hunyuanvideo-community/HunyuanVideo", subfolder="tokenizer")
+    tokenizer1 = LlamaTokenizerFast.from_pretrained("/mnt/cfs_yanfa/models/hunyuanvideo-community/HunyuanVideo", subfolder="tokenizer")
 
     logger.info(f"Loading text encoder 1 from {args.text_encoder1}")
     if os.path.isdir(args.text_encoder1):
@@ -190,7 +190,7 @@ def load_text_encoder1(
 def load_text_encoder2(args) -> tuple[CLIPTokenizer, CLIPTextModel]:
     # single file and directory (contains 'text_encoder_2') support
     logger.info(f"Loading text encoder 2 tokenizer")
-    tokenizer2 = CLIPTokenizer.from_pretrained("hunyuanvideo-community/HunyuanVideo", subfolder="tokenizer_2")
+    tokenizer2 = CLIPTokenizer.from_pretrained("/mnt/cfs_yanfa/models/hunyuanvideo-community/HunyuanVideo", subfolder="tokenizer_2")
 
     logger.info(f"Loading text encoder 2 from {args.text_encoder2}")
     if os.path.isdir(args.text_encoder2):

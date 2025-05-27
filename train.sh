@@ -1,0 +1,16 @@
+accelerate launch --num_cpu_threads_per_process 1 --mixed_precision bf16 fpack_train_network.py \
+    --dit /mnt/cfs_yanfa/models/framepack_h1111/FramePackI2V_HY_bf16.safetensors \
+    --vae /mnt/cfs_yanfa/models/framepack_h1111/pytorch_model.pt \
+    --text_encoder1 /mnt/cfs_yanfa/models/hunyuanvideo-community/HunyuanVideo/text_encoder/model-00001-of-00004.safetensors \
+    --text_encoder2 /mnt/cfs_yanfa/models/hunyuanvideo-community/HunyuanVideo/text_encoder_2/model.safetensors \
+    --image_encoder /mnt/cfs_yanfa/models/framepack_h1111/model.safetensors \
+    --dataset_config data/i2v/i2v.toml \
+    --sdpa --mixed_precision bf16 \
+    --optimizer_type adamw8bit --learning_rate 2e-4 --gradient_checkpointing \
+    --timestep_sampling shift --weighting_scheme none --discrete_flow_shift 3.0 \
+    --max_data_loader_n_workers 2 --persistent_data_loader_workers \
+    --network_module networks.lora_framepack --network_dim 32 \
+    --max_train_epochs 5 --save_every_n_epochs 1 --seed 42 \
+    --output_dir outputs/test2 --output_name test2 \
+    --log_with tensorboard --logging_dir logs --log_prefix test2 \
+    --save_state_on_train_end --save_state --resume outputs/test2/test2-000001-state

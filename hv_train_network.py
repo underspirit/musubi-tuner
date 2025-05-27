@@ -1878,6 +1878,7 @@ class NetworkTrainer:
             accelerator.unwrap_model(network).on_epoch_start(transformer)
 
             for step, batch in enumerate(train_dataloader):
+                step_start_time = time.time()
                 latents = batch["latents"]
                 bsz = latents.shape[0]
                 current_step.value = global_step
@@ -1979,6 +1980,9 @@ class NetworkTrainer:
                     logs = self.generate_step_logs(
                         args, current_loss, avr_loss, lr_scheduler, lr_descriptions, optimizer, keys_scaled, mean_norm, maximum_norm
                     )
+                    logs_str = " | ".join([f"{k}: {v}" for k,v in logs.items()])
+                    step_time = time.time() - step_start_time
+                    logger.info(f"epoch: {current_epoch.value}/{num_train_epochs} | step: {step+1}/{len(train_dataloader)} | step_time(s): {step_time} | {logs_str}")
                     accelerator.log(logs, step=global_step)
 
                 if global_step >= args.max_train_steps:
