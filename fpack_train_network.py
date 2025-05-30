@@ -29,42 +29,10 @@ from hv_train_network import NetworkTrainer, load_prompts, clean_memory_on_devic
 
 import logging
 
-def init_logging(log_dir: str, log_filename: str = "app.log"):
-    # 创建日志目录如果不存在
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    
-    log_path = os.path.join(log_dir, log_filename)
-    
-    # 创建一个日志记录器
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)  # 设置日志级别为INFO
-
-    # 创建文件处理器，将日志输出到文件
-    file_handler = logging.FileHandler(log_path)
-    file_handler.setLevel(logging.INFO)
-    
-    # 创建标准输出处理器
-    stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setLevel(logging.INFO)  # 可以设置标准输出的日志级别
-
-    # 创建日志格式器
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    
-    # 为处理器设置格式
-    file_handler.setFormatter(formatter)
-    stream_handler.setFormatter(formatter)
-    
-    # 添加处理器到日志记录器
-    logger.addHandler(file_handler)
-    logger.addHandler(stream_handler)
-
-init_logging("logs")
-logger = logging.getLogger(__name__)
-
 from utils import model_utils
 from utils.safetensors_utils import load_safetensors, MemoryEfficientSafeOpen
 
+logger = logging.getLogger(__name__)
 
 class FramePackNetworkTrainer(NetworkTrainer):
     def __init__(self):
@@ -468,6 +436,48 @@ def framepack_setup_parser(parser: argparse.ArgumentParser) -> argparse.Argument
     return parser
 
 
+def print_args(title, args):
+    """Print arguments."""
+    logger.info(f'------------------------ {title} ------------------------')
+    str_list = []
+    for arg in vars(args):
+        dots = '.' * (48 - len(arg))
+        str_list.append('  {} {} {}'.format(arg, dots, getattr(args, arg)))
+    for arg in sorted(str_list, key=lambda x: x.lower()):
+        logger.info(arg)
+    logger.info(f'-------------------- end of {title} ---------------------')
+
+def init_logging(log_dir: str, log_filename: str = "app.log"):
+    # 创建日志目录如果不存在
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    log_path = os.path.join(log_dir, log_filename)
+
+    # 创建一个日志记录器
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)  # 设置日志级别为INFO
+
+    # 创建文件处理器，将日志输出到文件
+    file_handler = logging.FileHandler(log_path)
+    file_handler.setLevel(logging.INFO)
+
+    # 创建标准输出处理器
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setLevel(logging.INFO)  # 可以设置标准输出的日志级别
+
+    # 创建日志格式器
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # 为处理器设置格式
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+
+    # 添加处理器到日志记录器
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+
+
 if __name__ == "__main__":
     parser = setup_parser_common()
     parser = framepack_setup_parser(parser)
@@ -482,5 +492,8 @@ if __name__ == "__main__":
     args.dit_dtype = "bfloat16"  # fixed
     args.sample_solver = "unipc"  # for sample generation, fixed to unipc
 
+    args.log_prefix = args.log_prefix + time.strftime("%Y%m%d%H%M%S", time.localtime())
+    init_logging(args.logging_dir, f"{args.log_prefix}.log")
+    print_args("arguments", args)
     trainer = FramePackNetworkTrainer()
     trainer.train(args)
