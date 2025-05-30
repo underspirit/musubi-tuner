@@ -1,0 +1,25 @@
+# Common parameters (resolution, caption_extension, batch_size, num_repeats, enable_bucket, bucket_no_upscale) 
+# can be set in either general or datasets sections
+# Video-specific parameters (target_frames, frame_extraction, frame_stride, frame_sample, max_frames, source_fps)
+# must be set in each datasets section
+
+# caption_extension is not required for metadata jsonl file
+# cache_directory is required for each dataset with metadata jsonl file
+
+# general configurations
+[general]
+resolution = [480, 832]
+batch_size = 1
+enable_bucket = true
+bucket_no_upscale = false
+
+[[datasets]]
+#video_jsonl_file = "/mnt/cfs_yanfa/lisongru/Projects/musubi-tuner/data/saylo_description_by_qwen2.5-vl-7b-short.shuf.new.jsonl"
+video_jsonl_file = "/mnt/cfs_yanfa/datasets/jsonl/saylo_reviewed_480P_mix_5k_for_train.jsonl"
+target_frames = [153]
+frame_extraction = "full"
+cache_directory = "/mnt/cfs_yanfa/datasets/saylo_480P_cache_5k_for_train"
+max_frames = 301
+# source_fps = 30.0 # optional, source fps for videos in the jsonl file
+
+# other datasets can be added here. each dataset can have different configurations

@@ -9,6 +9,7 @@ function cache_vae() {
         --image_encoder /mnt/cfs_yanfa/models/framepack_h1111/model.safetensors \
         --vae_chunk_size 32 \
         --latent_window_size 9 \
+        --keep_cache \
         --vae_spatial_tile_sample_min_size 128
 }
 

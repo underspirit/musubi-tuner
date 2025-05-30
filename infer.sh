@@ -9,7 +9,7 @@ do
     --image_encoder /mnt/cfs_yanfa/models/framepack_h1111/model.safetensors \
     --image_path /mnt/cfs_yanfa/lisongru/Projects/musubi-tuner/data/girl.png \
     --prompt "小女孩伸手从纸箱中拿出了一只duck-wang, duck-wang再她手上摇晃脑袋" \
-    --video_size 464 832 --video_seconds 5 --fps 16 --infer_steps 25 \
+    --video_size 832 480 --video_seconds 5 --fps 30 --infer_steps 25 \
     --attn_mode sdpa --fp8_scaled \
     --vae_chunk_size 32 --vae_spatial_tile_sample_min_size 128 \
     --save_path /mnt/cfs_yanfa/lisongru/Projects/musubi-tuner/data/$i --output_type both \
