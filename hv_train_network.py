@@ -1796,11 +1796,19 @@ class NetworkTrainer:
                 init_kwargs=init_kwargs,
             )
 
-        # TODO skip until initial step
-        progress_bar = tqdm(range(args.max_train_steps), smoothing=0, disable=not accelerator.is_local_main_process, desc="steps")
+        # set progress bar and start positions according to resumed step
+        global_step = int(accelerator.step)
+        epoch_to_start = global_step // num_update_steps_per_epoch
+        progress_bar = tqdm(
+            total=args.max_train_steps,
+            smoothing=0,
+            disable=not accelerator.is_local_main_process,
+            desc="steps",
+            initial=global_step,
+        )
+        current_epoch.value = epoch_to_start
+        current_step.value = global_step
 
-        epoch_to_start = 0
-        global_step = 0
         noise_scheduler = FlowMatchDiscreteScheduler(shift=args.discrete_flow_shift, reverse=True, solver="euler")
 
         loss_recorder = train_utils.LossRecorder()
