@@ -676,14 +676,14 @@ class NetworkTrainer:
             **lr_scheduler_kwargs,
         )
 
-    def resume_from_local_or_hf_if_specified(self, accelerator: Accelerator, args: argparse.Namespace) -> bool:
+    def resume_from_local_or_hf_if_specified(self, accelerator: Accelerator, args: argparse.Namespace) -> str | None:
         if not args.resume:
-            return False
+            return None
 
         if not args.resume_from_huggingface:
             logger.info(f"resume training from local state: {args.resume}")
             accelerator.load_state(args.resume)
-            return True
+            return args.resume
 
         logger.info(f"resume training from huggingface state: {args.resume}")
         repo_id = args.resume.split("/")[0] + "/" + args.resume.split("/")[1]
@@ -728,7 +728,7 @@ class NetworkTrainer:
         dirname = os.path.dirname(results[0])
         accelerator.load_state(dirname)
 
-        return True
+        return dirname
 
     def get_noisy_model_input_and_timesteps(
         self,
@@ -1679,7 +1679,7 @@ class NetworkTrainer:
         accelerator.register_load_state_pre_hook(load_model_hook)
 
         # resume from local or huggingface. accelerator.step is set
-        self.resume_from_local_or_hf_if_specified(accelerator, args)  # accelerator.load_state(args.resume)
+        state_dir = None  # will be used after loss_recorder is created
 
         # epoch数を計算する
         num_update_steps_per_epoch = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps)
@@ -1804,6 +1804,9 @@ class NetworkTrainer:
         noise_scheduler = FlowMatchDiscreteScheduler(shift=args.discrete_flow_shift, reverse=True, solver="euler")
 
         loss_recorder = train_utils.LossRecorder()
+        state_dir = self.resume_from_local_or_hf_if_specified(accelerator, args) if state_dir is None else state_dir
+        if state_dir is not None:
+            train_utils.load_loss_recorder(state_dir, loss_recorder)
         del train_dataset_group
 
         # function for saving/removing
@@ -1959,7 +1962,7 @@ class NetworkTrainer:
                                 save_model(ckpt_name, accelerator.unwrap_model(network), global_step, epoch)
 
                                 if args.save_state:
-                                    train_utils.save_and_remove_state_stepwise(args, accelerator, global_step)
+                                    train_utils.save_and_remove_state_stepwise(args, accelerator, global_step, loss_recorder)
 
                                 remove_step_no = train_utils.get_remove_step_no(args, global_step)
                                 if remove_step_no is not None:
@@ -2008,7 +2011,7 @@ class NetworkTrainer:
                         remove_model(remove_ckpt_name)
 
                     if args.save_state:
-                        train_utils.save_and_remove_state_on_epoch_end(args, accelerator, epoch + 1)
+                        train_utils.save_and_remove_state_on_epoch_end(args, accelerator, epoch + 1, loss_recorder)
 
             self.sample_images(accelerator, args, epoch + 1, global_step, vae, transformer, sample_parameters, dit_dtype)
             optimizer_train_fn()
@@ -2025,7 +2028,7 @@ class NetworkTrainer:
         optimizer_eval_fn()
 
         if is_main_process and (args.save_state or args.save_state_on_train_end):
-            train_utils.save_state_on_train_end(args, accelerator)
+            train_utils.save_state_on_train_end(args, accelerator, loss_recorder)
 
         if is_main_process:
             ckpt_name = train_utils.get_last_ckpt_name(args.output_name)
