@@ -957,6 +957,7 @@ class FineTuningTrainer:
         noise_scheduler = FlowMatchDiscreteScheduler(shift=args.discrete_flow_shift, reverse=True, solver="euler")
 
         loss_recorder = train_utils.LossRecorder()
+        accelerator.register_for_checkpointing(loss_recorder)
         del train_dataset_group
 
         # function for saving/removing

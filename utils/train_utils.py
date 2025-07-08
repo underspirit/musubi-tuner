@@ -77,6 +77,16 @@ class LossRecorder:
     def moving_average(self) -> float:
         return self.loss_total / len(self.loss_list)
 
+    def state_dict(self):
+        return {
+            "loss_list": self.loss_list,
+            "loss_total": self.loss_total,
+        }
+
+    def load_state_dict(self, state_dict):
+        self.loss_list = state_dict.get("loss_list", [])
+        self.loss_total = state_dict.get("loss_total", 0.0)
+
 
 def get_epoch_ckpt_name(model_name, epoch_no: int):
     return EPOCH_FILE_NAME.format(model_name, epoch_no) + ".safetensors"
